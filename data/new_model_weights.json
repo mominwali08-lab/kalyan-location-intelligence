@@ -1,0 +1,89 @@
+{
+  "intercept": -0.0363,
+  "scaler": {
+    "competitor_count_500m": {
+      "mean": 3.1985,
+      "std": 2.7726
+    },
+    "nearest_competitor_dist_m": {
+      "mean": 294.3022,
+      "std": 332.8702
+    },
+    "business_density_1km": {
+      "mean": 43.5955,
+      "std": 19.6017
+    },
+    "dist_durgadi_fort_m": {
+      "mean": 2505.3124,
+      "std": 1212.6245
+    },
+    "avg_rating": {
+      "mean": 4.4573,
+      "std": 0.5219
+    },
+    "review_count": {
+      "mean": 485.8989,
+      "std": 1007.5828
+    },
+    "cat_cafe": {
+      "mean": 0.0749,
+      "std": 0.2632
+    },
+    "cat_restaurant": {
+      "mean": 0.1386,
+      "std": 0.3455
+    },
+    "cat_bakery": {
+      "mean": 0.1011,
+      "std": 0.3015
+    },
+    "cat_pharmacy": {
+      "mean": 0.1199,
+      "std": 0.3248
+    },
+    "cat_grocery_or_supermarket": {
+      "mean": 0.1161,
+      "std": 0.3204
+    },
+    "cat_clothing_store": {
+      "mean": 0.0936,
+      "std": 0.2913
+    },
+    "cat_electronics_store": {
+      "mean": 0.0899,
+      "std": 0.286
+    },
+    "cat_hardware_store": {
+      "mean": 0.0936,
+      "std": 0.2913
+    },
+    "cat_salon": {
+      "mean": 0.0936,
+      "std": 0.2913
+    },
+    "cat_stationery": {
+      "mean": 0.0787,
+      "std": 0.2692
+    }
+  },
+  "coefficients": {
+    "competitor_count_500m": -2.008489,
+    "business_density_1km": 1.352195,
+    "cat_cafe": 0.473543,
+    "cat_stationery": -0.41639,
+    "avg_rating": 0.321185,
+    "nearest_competitor_dist_m": 0.314488,
+    "cat_hardware_store": -0.238087,
+    "cat_pharmacy": 0.197899,
+    "cat_electronics_store": -0.174002,
+    "cat_bakery": 0.161167,
+    "cat_restaurant": 0.12218,
+    "cat_clothing_store": -0.112101,
+    "dist_durgadi_fort_m": -0.10739,
+    "cat_salon": -0.081737,
+    "cat_grocery_or_supermarket": 0.024817,
+    "review_count": -0.009945
+  },
+  "roc_auc": 0.8459,
+  "n_records": 267
+}

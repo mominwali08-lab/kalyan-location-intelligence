@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalyan Location Intelligence System</title>
+  
+  <!-- Leaflet CSS & JS for interactive map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #151c2c;
+      --border: #232d42;
+      --border-focus: #3b82f6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --good: #22c55e;
+      --good-bg: rgba(34, 197, 94, 0.12);
+      --risky: #ef4444;
+      --risky-bg: rgba(239, 68, 68, 0.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      padding: 24px;
+    }
+
+    /* Minimal Header */
+    header {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 24px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-titles h1 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+    .header-titles p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+
+    /* 2-Column Responsive Layout */
+    .container {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 992px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    select, input[type="text"] {
+      width: 100%;
+      background: #0b0f19;
+      border: 1px solid var(--border);
+      color: #ffffff;
+      padding: 9px 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-bottom: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    select:focus, input[type="text"]:focus {
+      border-color: var(--border-focus);
+    }
+
+    .btn {
+      width: 100%;
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 9px 14px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: var(--primary-hover); }
+
+    /* Map Section in Dark Theme */
+    #map {
+      height: 480px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      width: 100%;
+    }
+    /* Elegant Dark Map Filter */
+    .leaflet-tile-pane {
+      filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.95) saturate(0.6);
+    }
+    .map-helper {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Score Presentation */
+    .score-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #0b0f19;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+    }
+    .score-val {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1;
+    }
+    .score-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .pill {
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+    .pill-good { background: var(--good-bg); color: var(--good); border: 1px solid rgba(34, 197, 94, 0.4); }
+    .pill-risky { background: var(--risky-bg); color: var(--risky); border: 1px solid rgba(239, 68, 68, 0.4); }
+
+    .bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #232d42;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+    .bar-fill {
+      height: 100%;
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    /* Factor Breakdown */
+    .factors-box {
+      margin-bottom: 18px;
+    }
+    .factor-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px solid #1a2336;
+      font-size: 0.85rem;
+    }
+    .factor-row:last-child { border-bottom: none; }
+    .val-pos { color: var(--good); font-weight: 600; }
+    .val-neg { color: var(--risky); font-weight: 600; }
+
+    /* Spatial Metrics Table */
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin-bottom: 18px;
+    }
+    .stats-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #1a2336;
+      color: var(--text-muted);
+    }
+    .stats-table td:nth-child(2) {
+      text-align: right;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    /* Recommendations Box for Risky Spots */
+    .rec-box {
+      background: rgba(245, 158, 11, 0.07);
+      border: 1px solid rgba(245, 158, 11, 0.28);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.82rem;
+      color: #fcd34d;
+      margin-bottom: 18px;
+    }
+    .rec-box strong { color: #fbbf24; display: block; margin-bottom: 2px; font-size: 0.84rem; }
+    .advice-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin-bottom: 5px;
+      font-size: 0.8rem;
+      color: #fde68a;
+    }
+    .advice-card .adv-dir { font-weight: 600; }
+    .advice-card .adv-score {
+      background: rgba(245, 158, 11, 0.25);
+      border-radius: 20px;
+      padding: 2px 9px;
+      font-weight: 700;
+      font-size: 0.78rem;
+      color: #fbbf24;
+    }
+    .cat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(245,158,11,0.2);
+      border-radius: 20px;
+      padding: 3px 10px;
+      margin: 3px 3px 0 0;
+      font-size: 0.78rem;
+      color: #fde68a;
+    }
+    .cat-chip span { font-weight: 700; color: #fbbf24; }
+
+
+    /* Comparison Table Across All Categories */
+    .cat-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .cat-table th {
+      text-align: left;
+      color: var(--text-muted);
+      font-weight: 500;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .cat-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #1a2336;
+    }
+    .cat-table td:nth-child(2) { font-weight: 600; color: #ffffff; }
+
+    footer {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 30px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Minimal Dark Header -->
+  <header>
+    <div class="header-titles">
+      <h1>Kalyan Location Intelligence System</h1>
+    </div>
+  </header>
+
+  <div class="container">
+    
+    <!-- LEFT PANEL: SITE & BUSINESS TYPE CONTROLS -->
+    <div>
+      <div class="card">
+        <h2>1. Site Location</h2>
+
+        <label for="landmark-select">Select a Kalyan Landmark:</label>
+        <select id="landmark-select" onchange="onLandmarkSelect()">
+          <option value="19.2532055,73.1370898">Khadakpada Circle (West)</option>
+          <option value="19.2403,73.1305">Kalyan Railway Station (West Entry)</option>
+          <option value="19.2479275,73.1471217">B.K. Birla College Gate</option>
+          <option value="19.2453717,73.1186096">Durgadi Fort Chowk</option>
+          <option value="19.2425,73.1290">Shivaji Chowk Bazaar</option>
+          <option value="19.2597,73.1429">Godrej Hill Market</option>
+          <option value="19.2421,73.1395">Rambaug 4 / Maxi Ground</option>
+          <option value="19.2612,73.1345">Adharwadi Chowk</option>
+          <option value="19.2249,73.1341">Kalyan East (Tisgaon Naka)</option>
+          <option value="19.2650,73.1550">Peripheral Outskirts (Shahad Road)</option>
+        </select>
+
+        <label for="address-input">Or Search Landmark Name:</label>
+        <div style="display: flex; gap: 8px; margin-bottom: 18px;">
+          <input type="text" id="address-input" placeholder="e.g. Birla College, Kalyan" style="margin-bottom:0;" />
+          <button class="btn" style="width: auto; padding: 0 16px;" onclick="geocodeSearch()">Search</button>
+        </div>
+
+        <h2>2. Business Type</h2>
+        <label for="category-select">Select Commercial Category:</label>
+        <select id="category-select" onchange="evaluateSelection()">
+          <option value="cafe" selected>Cafe</option>
+          <option value="restaurant">Restaurant</option>
+          <option value="bakery">Bakery</option>
+          <option value="pharmacy">Pharmacy</option>
+          <option value="grocery_or_supermarket">Grocery / Supermarket</option>
+          <option value="clothing_store">Clothing Store</option>
+          <option value="electronics_store">Electronics Store</option>
+          <option value="hardware_store">Hardware Store</option>
+          <option value="salon">Salon</option>
+          <option value="stationery">Stationery Store</option>
+        </select>
+
+        <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.82rem; margin-top: 8px;">
+          <input type="checkbox" id="chk-show-competitors" checked onchange="drawCompetitors()" style="width: auto; margin: 0;">
+          Plot nearby direct competitors
+        </label>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: DARK MAP & ASSESSMENT -->
+    <div>
+      <!-- The Map Card -->
+      <div class="card" style="padding: 14px;">
+        <div id="map"></div>
+        <div class="map-helper">
+          <span>Click anywhere on the map to evaluate a new spot</span>
+          <span id="pin-status">Current: Khadakpada Circle</span>
+        </div>
+      </div>
+
+      <!-- Analysis Results Card -->
+      <div class="card">
+        <h2>Viability Assessment</h2>
+
+        <div class="score-banner">
+          <div>
+            <div class="score-val" id="score-display">71%</div>
+            <div class="score-meta">Estimated Viability Score for <strong id="cat-label" style="color:#ffffff;">Cafe</strong></div>
+          </div>
+          <div id="badge-pill" class="pill pill-good">GOOD LOCATION</div>
+        </div>
+
+        <div class="bar-bg">
+          <div class="bar-fill" id="score-bar" style="width: 71%; background-color: var(--good);"></div>
+        </div>
+
+        <!-- Explainable ML Factor Breakdown -->
+        <h3 style="font-size: 0.88rem; font-weight: 600; margin-bottom: 8px; color: #ffffff;">
+          What Influenced This Score
+        </h3>
+        <div class="factors-box" id="factors-container"></div>
+
+        <!-- Spatial Stats -->
+        <h3 style="font-size: 0.88rem; font-weight: 600; margin-bottom: 8px; color: #ffffff;">
+          Spatial & Competitive Context
+        </h3>
+        <table class="stats-table">
+          <tbody>
+            <tr><td>Direct competitors within 500m:</td><td id="stat-comp-count">3</td></tr>
+            <tr><td>Distance to nearest competitor:</td><td id="stat-nearest-comp">180 m</td></tr>
+            <tr><td>Total commercial density (1km radius):</td><td id="stat-density">48 businesses</td></tr>
+            <tr><td>Avg. rating of nearby businesses:</td><td id="stat-avg-rating">4.2 ★</td></tr>
+            <tr><td>Distance to Durgadi Fort area:</td><td id="stat-durgadi">1800 m</td></tr>
+          </tbody>
+        </table>
+
+        <!-- Risky Spot Suggestions -->
+        <div id="box-risky" style="display: none;" class="rec-box">
+          <strong>Location Advice for Risky Score:</strong>
+          <div id="risky-label-spots" style="font-size:0.78rem; color:#fcd34d; margin:6px 0 4px;"></div>
+          <div id="risky-spots-list"></div>
+          <div id="risky-label-types" style="font-size:0.78rem; color:#fcd34d; margin:10px 0 4px;"></div>
+          <div id="risky-types-list"></div>
+        </div>
+
+        <!-- Comparison Table Across All Categories -->
+        <h3 style="font-size: 0.88rem; font-weight: 600; margin-top: 14px; margin-bottom: 8px; color: #ffffff;">
+          Viability Comparison for All Categories at this Spot
+        </h3>
+        <table class="cat-table">
+          <thead>
+            <tr><th>Category</th><th>Viability Score</th><th>Result</th></tr>
+          </thead>
+          <tbody id="table-comparison"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+
+  <script>
+    const LANDMARKS = {
+      dist_durgadi_fort_m: { lat: 19.2453717, lng: 73.1186096 }
+    };
+
+    const FOOD_GROUP = new Set(["cafe", "restaurant", "bakery"]);
+
+    const CATEGORY_NAMES = {
+      cafe: "Cafe",
+      restaurant: "Restaurant",
+      bakery: "Bakery",
+      pharmacy: "Pharmacy",
+      grocery_or_supermarket: "Grocery / Supermarket",
+      clothing_store: "Clothing Store",
+      electronics_store: "Electronics Store",
+      hardware_store: "Hardware Store",
+      salon: "Salon",
+      stationery: "Stationery Store"
+    };
+
+    const ALL_CATEGORIES = Object.keys(CATEGORY_NAMES).sort();
+
+    const MODEL = {
+      intercept: -0.0363,
+      scaler: {
+        competitor_count_500m:       { mean: 3.1985,   std: 2.7726   },
+        nearest_competitor_dist_m:   { mean: 294.3022, std: 332.8702 },
+        business_density_1km:        { mean: 43.5955,  std: 19.6017  },
+        dist_durgadi_fort_m:         { mean: 2505.3124,std: 1212.6245},
+        avg_rating:                  { mean: 4.4573,   std: 0.5219   },
+        review_count:                { mean: 485.8989, std: 1007.5828 },
+        cat_cafe:                    { mean: 0.0749,   std: 0.2632   },
+        cat_restaurant:              { mean: 0.1386,   std: 0.3455   },
+        cat_bakery:                  { mean: 0.1011,   std: 0.3015   },
+        cat_pharmacy:                { mean: 0.1199,   std: 0.3248   },
+        cat_grocery_or_supermarket:  { mean: 0.1161,   std: 0.3204   },
+        cat_clothing_store:          { mean: 0.0936,   std: 0.2913   },
+        cat_electronics_store:       { mean: 0.0899,   std: 0.286    },
+        cat_hardware_store:          { mean: 0.0936,   std: 0.2913   },
+        cat_salon:                   { mean: 0.0936,   std: 0.2913   },
+        cat_stationery:              { mean: 0.0787,   std: 0.2692   }
+      },
+      coefficients: {
+        competitor_count_500m:      -2.008489,
+        business_density_1km:        1.352195,
+        cat_cafe:                    0.473543,
+        cat_stationery:             -0.416390,
+        avg_rating:                  0.321185,
+        nearest_competitor_dist_m:   0.314488,
+        cat_hardware_store:         -0.238087,
+        cat_pharmacy:                0.197899,
+        cat_electronics_store:      -0.174002,
+        cat_bakery:                  0.161167,
+        cat_restaurant:              0.122180,
+        cat_clothing_store:         -0.112101,
+        dist_durgadi_fort_m:        -0.107390,
+        cat_salon:                  -0.081737,
+        cat_grocery_or_supermarket:  0.024817,
+        review_count:               -0.009945
+      },
+      descriptions: {
+        competitor_count_500m:       "Direct competitors within 500m",
+        business_density_1km:        "Commercial activity in 1km area",
+        nearest_competitor_dist_m:   "Spacing from nearest competitor",
+        dist_durgadi_fort_m:         "Distance from Durgadi Fort area",
+        avg_rating:                  "Average customer rating",
+        review_count:                "Customer review volume",
+        cat_cafe:                    "Cafe category fit",
+        cat_restaurant:              "Restaurant category fit",
+        cat_pharmacy:                "Pharmacy category fit",
+        cat_bakery:                  "Bakery category fit",
+        cat_grocery_or_supermarket:  "Grocery category fit",
+        cat_clothing_store:          "Clothing store category fit",
+        cat_electronics_store:       "Electronics store category fit",
+        cat_hardware_store:          "Hardware store category fit",
+        cat_salon:                   "Salon category fit",
+        cat_stationery:              "Stationery store category fit"
+      }
+    };
+
+    const BUSINESSES = [
+      { name: "The Bookmark Cafe", cat: "cafe", lat: 19.2614553, lng: 73.1350787 },
+      { name: "REVE CAFE", cat: "cafe", lat: 19.2623515, lng: 73.1424015 },
+      { name: "Global Tea Cafe Kalyan", cat: "cafe", lat: 19.2631226, lng: 73.1387431 },
+      { name: "Mimi Cafe & Bistro", cat: "cafe", lat: 19.2465426, lng: 73.1464171 },
+      { name: "Brambles Cafe", cat: "cafe", lat: 19.2476298, lng: 73.1449536 },
+      { name: "Aromagasms cafe", cat: "cafe", lat: 19.2488999, lng: 73.1427817 },
+      { name: "snickerdoodle coffeeworks", cat: "cafe", lat: 19.2411418, lng: 73.1383199 },
+      { name: "Cove Cafe", cat: "cafe", lat: 19.265027, lng: 73.1432628 },
+      { name: "Dear Lola Kitchen & Bar", cat: "restaurant", lat: 19.2618854, lng: 73.1350679 },
+      { name: "Gremy All Day", cat: "restaurant", lat: 19.25299, lng: 73.1341003 },
+      { name: "Namaste Kalyan Bar", cat: "restaurant", lat: 19.2534108, lng: 73.1367757 },
+      { name: "The Vintage Sky Lounge", cat: "restaurant", lat: 19.2563238, lng: 73.1417472 },
+      { name: "Malvan Tadka", cat: "restaurant", lat: 19.2509143, lng: 73.1404438 },
+      { name: "Green Leaf Restaurant", cat: "restaurant", lat: 19.2516116, lng: 73.1231909 },
+      { name: "Prasad Food Divine", cat: "restaurant", lat: 19.2527432, lng: 73.1288033 },
+      { name: "Zeno Health DB Chowk", cat: "pharmacy", lat: 19.2615864, lng: 73.1289352 },
+      { name: "Wellness Forever Ram Baug", cat: "pharmacy", lat: 19.2421318, lng: 73.139525 },
+      { name: "Wellness Forever Bazarpeth", cat: "pharmacy", lat: 19.2429695, lng: 73.128108 },
+      { name: "Wellness Forever Khadakpada", cat: "pharmacy", lat: 19.2526713, lng: 73.1372113 },
+      { name: "Reliance SMART Superstore", cat: "grocery_or_supermarket", lat: 19.2546267, lng: 73.1314683 },
+      { name: "D-Mart Kalyan", cat: "grocery_or_supermarket", lat: 19.237851, lng: 73.1263259 },
+      { name: "Top 10 Store Electronics", cat: "electronics_store", lat: 19.2424057, lng: 73.1299348 },
+      { name: "Fashion Factory Kalyan", cat: "clothing_store", lat: 19.2346931, lng: 73.1222658 },
+      { name: "Bakers Villa", cat: "bakery", lat: 19.2493952, lng: 73.1313563 },
+      { name: "Theobroma Kalyan", cat: "bakery", lat: 19.2534082, lng: 73.1368483 },
+      { name: "Raj Hardware", cat: "hardware_store", lat: 19.2397967, lng: 73.1283239 },
+      { name: "Solastaa Salon", cat: "salon", lat: 19.2530406, lng: 73.136658 },
+      { name: "Matoshree Stationery", cat: "stationery", lat: 19.2388278, lng: 73.1293227 }
+    ];
+
+    let curLat = 19.2532055;
+    let curLng = 73.1370898;
+    let map, marker, competitorsLayer;
+
+    function haversineDist(lat1, lon1, lat2, lon2) {
+      const R = 6371000.0;
+      const dLat = (lat2 - lat1) * Math.PI / 180.0;
+      const dLon = (lon2 - lon1) * Math.PI / 180.0;
+      const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(lat1 * Math.PI / 180.0) * Math.cos(lat2 * Math.PI / 180.0) * (Math.sin(dLon / 2) ** 2);
+      return R * 2.0 * Math.atan2(Math.sqrt(a), Math.sqrt(1.0 - a));
+    }
+
+    function checkCompetitor(catA, catB) {
+      if (FOOD_GROUP.has(catA) && FOOD_GROUP.has(catB)) return true;
+      return catA === catB;
+    }
+
+    function extractFeatures(lat, lng, category) {
+      const f = {};
+      for (const [key, obj] of Object.entries(LANDMARKS)) {
+        f[key] = haversineDist(lat, lng, obj.lat, obj.lng);
+      }
+
+      const compDistances = [];
+      let totalDensity = 0;
+      let ratingSum = 0, ratingCount = 0, reviewSum = 0;
+
+      for (const b of BUSINESSES) {
+        const d = haversineDist(lat, lng, b.lat, b.lng);
+        if (d < 1.0) continue;
+        if (d <= 1000.0) {
+          totalDensity++;
+          if (b.rating) { ratingSum += b.rating; ratingCount++; }
+          reviewSum += (b.reviews || 0);
+        }
+        if (checkCompetitor(category, b.cat)) compDistances.push(d);
+      }
+
+      f.competitor_count_500m     = compDistances.filter(d => d <= 500.0).length;
+      f.nearest_competitor_dist_m = compDistances.length > 0 ? Math.min(...compDistances) : 1500.0;
+      f.business_density_1km      = totalDensity;
+      f.avg_rating                = ratingCount > 0 ? ratingSum / ratingCount : 4.0;
+      f.review_count              = Math.min(reviewSum, 5000);
+
+      for (const cat of ALL_CATEGORIES) {
+        f[`cat_${cat}`] = (cat === category) ? 1 : 0;
+      }
+      return f;
+    }
+
+
+    function calculateViability(lat, lng, category) {
+      const feats = extractFeatures(lat, lng, category);
+      let logit = MODEL.intercept;
+      const impacts = [];
+
+      for (const [featName, coef] of Object.entries(MODEL.coefficients)) {
+        const x = feats[featName] || 0;
+        const scaler = MODEL.scaler[featName];
+        const z = (x - scaler.mean) / scaler.std;
+        const impact = coef * z;
+        logit += impact;
+
+        impacts.push({
+          name: MODEL.descriptions[featName] || featName,
+          impact: impact,
+          absVal: Math.abs(impact)
+        });
+      }
+
+      const prob = 1.0 / (1.0 + Math.exp(-logit));
+      impacts.sort((a, b) => b.absVal - a.absVal);
+
+      return {
+        probability: prob,
+        score: Math.round(prob * 100),
+        features: feats,
+        topFactors: impacts.slice(0, 4)
+      };
+    }
+
+    function initLeaflet() {
+      map = L.map('map').setView([curLat, curLng], 16);
+
+      // Free, unblocked Esri tiles with dark filter applied
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19,
+        attribution: 'Esri, HERE, Garmin, OpenStreetMap'
+      }).addTo(map);
+
+      // Selected Location Marker (Blue Ring)
+      const pinIcon = L.divIcon({
+        className: 'user-pin',
+        html: `<div style="background:#3b82f6; width:20px; height:20px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 0 10px rgba(59,130,246,0.8);"></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      });
+      marker = L.marker([curLat, curLng], { icon: pinIcon }).addTo(map);
+
+      competitorsLayer = L.layerGroup().addTo(map);
+
+      // Map Click Handler
+      map.on('click', function(e) {
+        curLat = e.latlng.lat;
+        curLng = e.latlng.lng;
+        document.getElementById('pin-status').innerText = `Pinned at (${curLat.toFixed(4)}, ${curLng.toFixed(4)})`;
+        marker.setLatLng([curLat, curLng]);
+        evaluateSelection();
+      });
+
+      evaluateSelection();
+    }
+
+    function drawCompetitors() {
+      competitorsLayer.clearLayers();
+      const show = document.getElementById('chk-show-competitors').checked;
+      if (!show) return;
+
+      const cat = document.getElementById('category-select').value;
+      for (const b of BUSINESSES) {
+        if (checkCompetitor(cat, b.cat)) {
+          const d = haversineDist(curLat, curLng, b.lat, b.lng);
+          if (d <= 1500) {
+            L.circleMarker([b.lat, b.lng], {
+              radius: 5,
+              color: '#ef4444',
+              fillColor: '#ef4444',
+              fillOpacity: 0.85,
+              weight: 1.5
+            }).bindTooltip(`${b.name} (${CATEGORY_NAMES[b.cat] || b.cat}) &bull; ${Math.round(d)}m away`).addTo(competitorsLayer);
+          }
+        }
+      }
+    }
+
+    function evaluateSelection() {
+      const cat = document.getElementById('category-select').value;
+      const res = calculateViability(curLat, curLng, cat);
+
+      document.getElementById('score-display').innerText = `${res.score}%`;
+      document.getElementById('cat-label').innerText = CATEGORY_NAMES[cat];
+
+      const pill = document.getElementById('badge-pill');
+      const bar = document.getElementById('score-bar');
+      bar.style.width = `${res.score}%`;
+
+      if (res.score >= 50) {
+        pill.innerText = "GOOD LOCATION";
+        pill.className = "pill pill-good";
+        bar.style.backgroundColor = "var(--good)";
+        document.getElementById('box-risky').style.display = "none";
+      } else {
+        pill.innerText = "RISKY LOCATION";
+        pill.className = "pill pill-risky";
+        bar.style.backgroundColor = "var(--risky)";
+        renderRiskyAdvice(cat, res.score);
+      }
+
+      // Key Factors
+      const factorBox = document.getElementById('factors-container');
+      factorBox.innerHTML = "";
+      for (const item of res.topFactors) {
+        const isPos = item.impact >= 0;
+        const abs = item.absVal;
+        const strength = abs >= 0.4 ? "Strong" : abs >= 0.15 ? "Moderate" : "Slight";
+        const label = isPos ? `${strength} positive effect` : `${strength} negative effect`;
+        const div = document.createElement('div');
+        div.className = "factor-row";
+        div.innerHTML = `
+          <span>${item.name}</span>
+          <span class="${isPos ? 'val-pos' : 'val-neg'}">${label}</span>
+        `;
+        factorBox.appendChild(div);
+      }
+
+      // Spatial Stats
+      document.getElementById('stat-comp-count').innerText  = res.features.competitor_count_500m;
+      document.getElementById('stat-nearest-comp').innerText = `${Math.round(res.features.nearest_competitor_dist_m)} m`;
+      document.getElementById('stat-density').innerText      = `${res.features.business_density_1km} businesses`;
+      document.getElementById('stat-avg-rating').innerText   = `${res.features.avg_rating.toFixed(1)} ★`;
+      document.getElementById('stat-durgadi').innerText      = `${Math.round(res.features.dist_durgadi_fort_m)} m`;
+
+      drawCompetitors();
+      renderComparisonTable();
+    }
+
+    function renderRiskyAdvice(cat, score) {
+      const box        = document.getElementById('box-risky');
+      const labelSpots = document.getElementById('risky-label-spots');
+      const spotsList  = document.getElementById('risky-spots-list');
+      const labelTypes = document.getElementById('risky-label-types');
+      const typesList  = document.getElementById('risky-types-list');
+
+      const directions = [
+        { name: "North", deg: 0 }, { name: "North-East", deg: 45 }, { name: "East", deg: 90 },
+        { name: "South-East", deg: 135 }, { name: "South", deg: 180 }, { name: "South-West", deg: 225 },
+        { name: "West", deg: 270 }, { name: "North-West", deg: 315 }
+      ];
+      const candidates = [];
+
+      for (const d of directions) {
+        const rad = d.deg * Math.PI / 180.0;
+        for (const dist of [200, 400]) {
+          const dLat = (dist * Math.cos(rad)) / 111320.0;
+          const dLng = (dist * Math.sin(rad)) / (111320.0 * Math.cos(curLat * Math.PI / 180.0));
+          const cand = calculateViability(curLat + dLat, curLng + dLng, cat);
+          if (cand.score >= score + 5) {
+            candidates.push({ desc: `${dist}m ${d.name}`, sc: cand.score });
+          }
+        }
+      }
+      candidates.sort((a, b) => b.sc - a.sc);
+
+      if (candidates.length > 0) {
+        labelSpots.textContent = `Better nearby spots for ${CATEGORY_NAMES[cat]}:`;
+        spotsList.innerHTML = candidates.slice(0, 3).map(c =>
+          `<div style="color:#fcd34d; font-size:0.8rem; margin-bottom:3px;">&#8594; Move ${c.desc} &mdash; ${c.sc}%</div>`
+        ).join('');
+      } else {
+        labelSpots.textContent = '';
+        spotsList.innerHTML = `<div style="font-size:0.79rem;color:#fcd34d;">No spots within 400m showed a significant improvement.</div>`;
+      }
+
+      const viable = [];
+      for (const c of ALL_CATEGORIES) {
+        const sc = calculateViability(curLat, curLng, c).score;
+        if (sc >= 50) viable.push({ name: CATEGORY_NAMES[c], sc: sc });
+      }
+      viable.sort((a, b) => b.sc - a.sc);
+
+      if (viable.length > 0) {
+        labelTypes.textContent = 'Better fits at this exact location:';
+        typesList.innerHTML = viable.slice(0, 4).map(v =>
+          `<span class="cat-chip">${v.name} <span>${v.sc}%</span></span>`
+        ).join('');
+      } else {
+        labelTypes.textContent = '';
+        typesList.innerHTML = '';
+      }
+
+      box.style.display = "block";
+    }
+
+    function renderComparisonTable() {
+      const tbody = document.getElementById('table-comparison');
+      tbody.innerHTML = "";
+
+      const scores = ALL_CATEGORIES.map(c => ({
+        name: CATEGORY_NAMES[c],
+        score: calculateViability(curLat, curLng, c).score
+      })).sort((a, b) => b.score - a.score);
+
+      for (const row of scores) {
+        const tr = document.createElement('tr');
+        const isGood = row.score >= 50;
+        tr.innerHTML = `
+          <td>${row.name}</td>
+          <td>${row.score}%</td>
+          <td><span style="color:${isGood ? 'var(--good)' : 'var(--risky)'}; font-weight:600;">${isGood ? 'Good' : 'Risky'}</span></td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function onLandmarkSelect() {
+      const val = document.getElementById('landmark-select').value;
+      const [lat, lng] = val.split(',').map(parseFloat);
+      curLat = lat;
+      curLng = lng;
+      
+      const selName = document.getElementById('landmark-select').selectedOptions[0].text;
+      document.getElementById('pin-status').innerText = `Current: ${selName}`;
+
+      map.setView([curLat, curLng], 16);
+      marker.setLatLng([curLat, curLng]);
+      evaluateSelection();
+    }
+
+    function geocodeSearch() {
+      const q = document.getElementById('address-input').value.trim();
+      if (!q) return;
+
+      const fullQ = q.toLowerCase().includes('kalyan') ? q : `${q}, Kalyan, Maharashtra`;
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(fullQ)}&format=json&limit=1&countrycodes=in`;
+
+      fetch(url, { headers: { 'User-Agent': 'KalyanStudentProject/1.0' } })
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.length > 0) {
+            curLat = parseFloat(data[0].lat);
+            curLng = parseFloat(data[0].lon);
+            document.getElementById('pin-status').innerText = `Search: ${data[0].display_name.split(',')[0]}`;
+            map.setView([curLat, curLng], 16);
+            marker.setLatLng([curLat, curLng]);
+            evaluateSelection();
+          } else {
+            alert("Location not found in Kalyan. Try selecting from the landmark list.");
+          }
+        })
+        .catch(() => alert("Network search unavailable. Please pick a landmark from the list or click the map."));
+    }
+
+    window.onload = initLeaflet;
+  </script>
+</body>
+</html>
