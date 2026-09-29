@@ -825,29 +825,15 @@
         });
       }
 
-      // Balanced factor display: show both the main negative and positive drivers
-      const posFactors = impacts.filter(i => i.impact > 0).sort((a, b) => b.impact - a.impact);
-      const negFactors = impacts.filter(i => i.impact < 0).sort((a, b) => a.impact - b.impact);
+      // Show ALL meaningful factors sorted by impact strength
+      const meaningfulImpacts = impacts.filter(i => i.absVal >= 0.08);
+      const posFactors = meaningfulImpacts.filter(i => i.impact > 0).sort((a, b) => b.absVal - a.absVal);
+      const negFactors = meaningfulImpacts.filter(i => i.impact < 0).sort((a, b) => b.absVal - a.absVal);
 
-      let chosenFactors = [];
-      if (finalScore < 50) {
-        // If risky, prioritize showing the key negative reasons why it is risky:
-        chosenFactors = [...negFactors.slice(0, 2), ...posFactors.slice(0, 2)];
-        if (chosenFactors.length < 4) {
-          chosenFactors = [...negFactors.slice(0, 3), ...posFactors.slice(0, 1)];
-        }
-      } else {
-        // If good, prioritize showing what helped it succeed:
-        chosenFactors = [...posFactors.slice(0, 2), ...negFactors.slice(0, 2)];
-        if (chosenFactors.length < 4) {
-          chosenFactors = [...posFactors.slice(0, 3), ...negFactors.slice(0, 1)];
-        }
-      }
-
-      if (chosenFactors.length < 4) {
-        impacts.sort((a, b) => b.absVal - a.absVal);
-        chosenFactors = impacts.slice(0, 4);
-      }
+      // If risky: show negatives first, then positives. If good: positives first, then negatives.
+      const allFactors = finalScore < 50
+        ? [...negFactors, ...posFactors]
+        : [...posFactors, ...negFactors];
 
       return {
         probability: finalScore / 100.0,
@@ -856,7 +842,7 @@
         demographics: demo,
         synergy: synergy,
         features: feats,
-        topFactors: chosenFactors
+        topFactors: allFactors
       };
     }
 
@@ -946,12 +932,8 @@
       for (const item of res.topFactors) {
         const isPos = item.impact >= 0;
         const abs = item.absVal;
-        let label = "";
-        if (isPos) {
-          label = abs >= 0.4 ? "Big help (+)" : abs >= 0.15 ? "Helps (+)" : "Small help (+)";
-        } else {
-          label = abs >= 0.4 ? "Big problem (-)" : abs >= 0.15 ? "Hurts (-)" : "Small problem (-)";
-        }
+        const strength = abs >= 0.4 ? "Strong" : abs >= 0.15 ? "Moderate" : "Slight";
+        const label = isPos ? `${strength} positive effect` : `${strength} negative effect`;
         const div = document.createElement('div');
         div.className = "factor-row";
         div.innerHTML = `
