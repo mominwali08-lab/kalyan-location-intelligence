@@ -685,6 +685,16 @@
         }
       }
 
+      // If location is outside central Kalyan commercial core (>2200m away, e.g. Dombivli border or rural outskirts):
+      if (minDist > 2200) {
+        return {
+          zoneName: "Kalyan Outskirts / Sub-Urban",
+          tier: "Low Commercial Density Zone",
+          desc: "Peripheral residential pocket with sparse commercial foot traffic",
+          mult: 0.85
+        };
+      }
+
       const mult = (nearestZone.boosts && nearestZone.boosts[category]) ? nearestZone.boosts[category] : 1.0;
       return {
         zoneName: nearestZone.name,
@@ -734,7 +744,9 @@
       }
 
       f.competitor_count_500m     = compDistances.filter(d => d <= 500.0).length;
-      f.nearest_competitor_dist_m = compDistances.length > 0 ? Math.min(...compDistances) : 1500.0;
+      // Cap nearest competitor spacing at 800m max so remote areas outside town don't artificially inflate score
+      const rawMinDist = compDistances.length > 0 ? Math.min(...compDistances) : 800.0;
+      f.nearest_competitor_dist_m = Math.min(800.0, rawMinDist);
       f.business_density_1km      = totalDensity;
       f.avg_rating                = ratingCount > 0 ? ratingSum / ratingCount : 4.0;
       f.review_count              = Math.min(reviewSum, 5000);
@@ -758,8 +770,16 @@
         const impact = coef * z;
         logit += impact;
 
+        let featDisplayName = MODEL.descriptions[featName] || featName;
+        if (featName === 'competitor_count_500m' && feats.competitor_count_500m === 0) {
+          featDisplayName = "Zero direct competitors within 500m";
+        }
+        if (featName === 'business_density_1km' && feats.business_density_1km === 0) {
+          featDisplayName = "Zero commercial market (0 shops in 1km)";
+        }
+
         impacts.push({
-          name: MODEL.descriptions[featName] || featName,
+          name: featDisplayName,
           impact: impact,
           absVal: Math.abs(impact)
         });
@@ -770,17 +790,17 @@
       const synergy = calculateAnchorSynergy(lat, lng, category);
       const demo = getDemographicZone(lat, lng, category);
 
-      // Footfall gating: prevents dead-zones (like Tilaknagar with 0 competitors) from inflating to 100%
-      const footfallFactor = 0.38 + 0.62 * (footfall.index / 70.0);
+      // Footfall gating: if footfall is dead (<35), it sharply cuts the score
+      const footfallFactor = Math.max(0.18, Math.min(1.15, (footfall.index / 65.0) * 0.85 + 0.15));
       let modulated = (rawProb * 100 * footfallFactor) * demo.mult + synergy.boost;
       const finalScore = Math.max(5, Math.min(98, Math.round(modulated)));
 
       // Add dynamic Footfall & Synergy to explainable factors
-      const footfallImpact = (footfall.index - 50) / 30.0;
+      const footfallImpact = (footfall.index - 50) / 18.0;
       impacts.push({
         name: `Pedestrian Footfall Volume (${footfall.index}/100)`,
         impact: footfallImpact,
-        absVal: Math.abs(footfallImpact)
+        absVal: Math.abs(footfallImpact) * 1.5
       });
 
       if (synergy.boost > 0) {
