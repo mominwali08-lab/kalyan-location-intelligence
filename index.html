@@ -313,6 +313,7 @@
 
         <label for="landmark-select">Select a Kalyan Landmark:</label>
         <select id="landmark-select" onchange="onLandmarkSelect()">
+          <option value="" disabled selected>-- Select a Kalyan Landmark --</option>
           <option value="19.2532055,73.1370898">Khadakpada Circle (West)</option>
           <option value="19.2403,73.1305">Kalyan Railway Station (West Entry)</option>
           <option value="19.2479275,73.1471217">B.K. Birla College Gate</option>
@@ -329,7 +330,7 @@
 
         <label for="address-input">Or Search Landmark Name:</label>
         <div style="display: flex; gap: 8px; margin-bottom: 18px;">
-          <input type="text" id="address-input" placeholder="e.g. Birla College, Kalyan" style="margin-bottom:0;" />
+          <input type="text" id="address-input" placeholder="e.g. Civil Hospital, Birla College, Station" onkeydown="if(event.key==='Enter') geocodeSearch();" style="margin-bottom:0;" />
           <button class="btn" style="width: auto; padding: 0 16px;" onclick="geocodeSearch()">Search</button>
         </div>
 
@@ -852,6 +853,9 @@
         curLng = e.latlng.lng;
         document.getElementById('pin-status').innerText = `Pinned at (${curLat.toFixed(4)}, ${curLng.toFixed(4)})`;
         marker.setLatLng([curLat, curLng]);
+        // Clear both controls when clicking custom spot on map:
+        document.getElementById('landmark-select').value = "";
+        document.getElementById('address-input').value = "";
         evaluateSelection();
       });
 
@@ -1020,12 +1024,18 @@
     }
 
     function onLandmarkSelect() {
-      const val = document.getElementById('landmark-select').value;
+      const select = document.getElementById('landmark-select');
+      const val = select.value;
+      if (!val) return;
+
+      // Clear the address search bar when selecting from dropdown:
+      document.getElementById('address-input').value = "";
+
       const [lat, lng] = val.split(',').map(parseFloat);
       curLat = lat;
       curLng = lng;
       
-      const selName = document.getElementById('landmark-select').selectedOptions[0].text;
+      const selName = select.selectedOptions[0].text;
       document.getElementById('pin-status').innerText = `Current: ${selName}`;
 
       map.setView([curLat, curLng], 16);
@@ -1033,40 +1043,53 @@
       evaluateSelection();
     }
 
-    const LOCAL_LANDMARKS = {
-      "civil hospital": [19.2430, 73.1340, "Apex & Kalyan Civil Hospital"],
-      "kalyan civil hospital": [19.2430, 73.1340, "Apex & Kalyan Civil Hospital"],
-      "apex hospital": [19.2430, 73.1340, "Apex & Kalyan Civil Hospital"],
-      "apex": [19.2430, 73.1340, "Apex & Kalyan Civil Hospital"],
-      "hospital": [19.2430, 73.1340, "Apex & Kalyan Civil Hospital"],
-      "fortis": [19.2630, 73.1410, "Fortis Hospital Kalyan"],
-      "fortis hospital": [19.2630, 73.1410, "Fortis Hospital Kalyan"],
-      "birla college": [19.2479, 73.1471, "B.K. Birla College Gate"],
-      "birla": [19.2479, 73.1471, "B.K. Birla College Gate"],
-      "station": [19.2403, 73.1305, "Kalyan Railway Station"],
-      "kalyan station": [19.2403, 73.1305, "Kalyan Railway Station"],
-      "khadakpada": [19.2532, 73.1371, "Khadakpada Circle"],
-      "tilaknagar": [19.2136, 73.0927, "Tilaknagar (Outskirts)"],
-      "tilak nagar": [19.2136, 73.0927, "Tilaknagar (Outskirts)"],
-      "metro mall": [19.2300, 73.1220, "Metro Junction Mall"],
-      "shivaji chowk": [19.2430, 73.1310, "Shivaji Chowk Bazaar"]
-    };
-
     function geocodeSearch() {
       const q = document.getElementById('address-input').value.trim();
       if (!q) return;
 
-      const norm = q.toLowerCase().replace(/,/g, '').replace(/kalyan/g, '').trim();
-      for (const [k, v] of Object.entries(LOCAL_LANDMARKS)) {
-        if (norm.includes(k) || k.includes(norm)) {
-          curLat = v[0];
-          curLng = v[1];
-          document.getElementById('pin-status').innerText = `Search: ${v[2]}`;
-          map.setView([curLat, curLng], 16);
-          marker.setLatLng([curLat, curLng]);
-          evaluateSelection();
-          return;
-        }
+      // Reset the landmark dropdown when searching an address:
+      document.getElementById('landmark-select').value = "";
+
+      const s = q.toLowerCase();
+      let match = null;
+      if (s.includes('civil') || s.includes('apex') || (s.includes('hospital') && !s.includes('fortis'))) {
+        match = [19.2430, 73.1340, "Apex & Kalyan Civil Hospital"];
+      } else if (s.includes('birla')) {
+        match = [19.2479, 73.1471, "B.K. Birla College Gate"];
+      } else if (s.includes('station') || s.includes('railway')) {
+        match = [19.2403, 73.1305, "Kalyan Railway Station"];
+      } else if (s.includes('khadakpada')) {
+        match = [19.2532, 73.1371, "Khadakpada Circle"];
+      } else if (s.includes('tilak')) {
+        match = [19.2136, 73.0927, "Tilaknagar (Outskirts)"];
+      } else if (s.includes('fortis')) {
+        match = [19.2630, 73.1410, "Fortis Hospital Kalyan"];
+      } else if (s.includes('durgadi')) {
+        match = [19.2453, 73.1186, "Durgadi Fort Chowk"];
+      } else if (s.includes('rambaug')) {
+        match = [19.2421, 73.1395, "Rambaug 4"];
+      } else if (s.includes('adharwadi')) {
+        match = [19.2612, 73.1345, "Adharwadi Chowk"];
+      } else if (s.includes('godrej')) {
+        match = [19.2597, 73.1429, "Godrej Hill Market"];
+      } else if (s.includes('shivaji')) {
+        match = [19.2425, 73.1290, "Shivaji Chowk Bazaar"];
+      } else if (s.includes('metro')) {
+        match = [19.2300, 73.1220, "Metro Junction Mall"];
+      } else if (s.includes('tisgaon')) {
+        match = [19.2249, 73.1341, "Kalyan East (Tisgaon Naka)"];
+      } else if (s.includes('shahad')) {
+        match = [19.2650, 73.1550, "Peripheral Outskirts (Shahad Road)"];
+      }
+
+      if (match) {
+        curLat = match[0];
+        curLng = match[1];
+        document.getElementById('pin-status').innerText = `Search: ${match[2]}`;
+        map.setView([curLat, curLng], 16);
+        marker.setLatLng([curLat, curLng]);
+        evaluateSelection();
+        return;
       }
 
       const fullQ = q.toLowerCase().includes('kalyan') ? q : `${q}, Kalyan, Maharashtra`;
