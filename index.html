@@ -316,12 +316,14 @@
           <option value="19.2532055,73.1370898">Khadakpada Circle (West)</option>
           <option value="19.2403,73.1305">Kalyan Railway Station (West Entry)</option>
           <option value="19.2479275,73.1471217">B.K. Birla College Gate</option>
-          <option value="19.2453717,73.1186096">Durgadi Fort Chowk</option>
+          <option value="19.2430,73.1340">Apex & Kalyan Civil Hospital</option>
           <option value="19.2425,73.1290">Shivaji Chowk Bazaar</option>
+          <option value="19.2453717,73.1186096">Durgadi Fort Chowk</option>
           <option value="19.2597,73.1429">Godrej Hill Market</option>
           <option value="19.2421,73.1395">Rambaug 4 / Maxi Ground</option>
           <option value="19.2612,73.1345">Adharwadi Chowk</option>
           <option value="19.2249,73.1341">Kalyan East (Tisgaon Naka)</option>
+          <option value="19.2136,73.0927">Tilaknagar (Outskirts / Low Footfall)</option>
           <option value="19.2650,73.1550">Peripheral Outskirts (Shahad Road)</option>
         </select>
 
@@ -1031,9 +1033,41 @@
       evaluateSelection();
     }
 
+    const LOCAL_LANDMARKS = {
+      "civil hospital": [19.2430, 73.1340, "Apex & Kalyan Civil Hospital"],
+      "kalyan civil hospital": [19.2430, 73.1340, "Apex & Kalyan Civil Hospital"],
+      "apex hospital": [19.2430, 73.1340, "Apex & Kalyan Civil Hospital"],
+      "apex": [19.2430, 73.1340, "Apex & Kalyan Civil Hospital"],
+      "hospital": [19.2430, 73.1340, "Apex & Kalyan Civil Hospital"],
+      "fortis": [19.2630, 73.1410, "Fortis Hospital Kalyan"],
+      "fortis hospital": [19.2630, 73.1410, "Fortis Hospital Kalyan"],
+      "birla college": [19.2479, 73.1471, "B.K. Birla College Gate"],
+      "birla": [19.2479, 73.1471, "B.K. Birla College Gate"],
+      "station": [19.2403, 73.1305, "Kalyan Railway Station"],
+      "kalyan station": [19.2403, 73.1305, "Kalyan Railway Station"],
+      "khadakpada": [19.2532, 73.1371, "Khadakpada Circle"],
+      "tilaknagar": [19.2136, 73.0927, "Tilaknagar (Outskirts)"],
+      "tilak nagar": [19.2136, 73.0927, "Tilaknagar (Outskirts)"],
+      "metro mall": [19.2300, 73.1220, "Metro Junction Mall"],
+      "shivaji chowk": [19.2430, 73.1310, "Shivaji Chowk Bazaar"]
+    };
+
     function geocodeSearch() {
       const q = document.getElementById('address-input').value.trim();
       if (!q) return;
+
+      const norm = q.toLowerCase().replace(/,/g, '').replace(/kalyan/g, '').trim();
+      for (const [k, v] of Object.entries(LOCAL_LANDMARKS)) {
+        if (norm.includes(k) || k.includes(norm)) {
+          curLat = v[0];
+          curLng = v[1];
+          document.getElementById('pin-status').innerText = `Search: ${v[2]}`;
+          map.setView([curLat, curLng], 16);
+          marker.setLatLng([curLat, curLng]);
+          evaluateSelection();
+          return;
+        }
+      }
 
       const fullQ = q.toLowerCase().includes('kalyan') ? q : `${q}, Kalyan, Maharashtra`;
       const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(fullQ)}&format=json&limit=1&countrycodes=in`;
@@ -1049,7 +1083,7 @@
             marker.setLatLng([curLat, curLng]);
             evaluateSelection();
           } else {
-            alert("Location not found in Kalyan. Try selecting from the landmark list.");
+            alert("Location not found in Kalyan. Try selecting from the landmark dropdown or clicking the map.");
           }
         })
         .catch(() => alert("Network search unavailable. Please pick a landmark from the list or click the map."));
