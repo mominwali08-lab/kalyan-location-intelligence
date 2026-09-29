@@ -392,11 +392,13 @@
         </h3>
         <table class="stats-table">
           <tbody>
+            <tr><td>Pedestrian Footfall:</td><td id="stat-footfall">--</td></tr>
+            <tr><td>Demographic Profile:</td><td id="stat-demographics">--</td></tr>
+            <tr><td>Anchor Tenant Synergy:</td><td id="stat-synergy">--</td></tr>
             <tr><td>Direct competitors within 500m:</td><td id="stat-comp-count">3</td></tr>
             <tr><td>Distance to nearest competitor:</td><td id="stat-nearest-comp">180 m</td></tr>
             <tr><td>Total commercial density (1km radius):</td><td id="stat-density">48 businesses</td></tr>
             <tr><td>Avg. rating of nearby businesses:</td><td id="stat-avg-rating">4.2 ★</td></tr>
-            <tr><td>Distance to Durgadi Fort area:</td><td id="stat-durgadi">1800 m</td></tr>
           </tbody>
         </table>
 
@@ -536,6 +538,162 @@
       { name: "Matoshree Stationery", cat: "stationery", lat: 19.2388278, lng: 73.1293227 }
     ];
 
+    // Anchor Tenants & Key Commercial Nodes across Kalyan
+    const ANCHOR_TENANTS = [
+      // Healthcare Hubs (Huge synergy with Pharmacy / Medical Stores)
+      { name: "Apex & Kalyan Civil Hospital", type: "healthcare", lat: 19.2430, lng: 73.1340, radius: 500 },
+      { name: "Fortis Hospital Kalyan", type: "healthcare", lat: 19.2630, lng: 73.1410, radius: 500 },
+      { name: "Holy Cross Hospital", type: "healthcare", lat: 19.2460, lng: 73.1250, radius: 450 },
+      { name: "Meera Hospital & Bail Bazaar Clinics", type: "healthcare", lat: 19.2485, lng: 73.1315, radius: 450 },
+
+      // Education Hubs (Synergy with Cafe, Bakery, Stationery, Quick bites)
+      { name: "B.K. Birla College & School Hub", type: "education", lat: 19.2479, lng: 73.1471, radius: 550 },
+      { name: "Model College & Agrawal College", type: "education", lat: 19.2550, lng: 73.1500, radius: 500 },
+      { name: "Sacred Heart / St. Xavier's Zone", type: "education", lat: 19.2610, lng: 73.1410, radius: 450 },
+      { name: "Syndicate Coaching & Tech Hub", type: "education", lat: 19.2435, lng: 73.1420, radius: 450 },
+
+      // High-Transit & Commercial Hubs (Transit footfall, Retail synergy)
+      { name: "Kalyan Railway Station & Bus Depot", type: "transit_hub", lat: 19.2403, lng: 73.1305, radius: 700 },
+      { name: "Shivaji Chowk / Station Road Bazaar", type: "commercial_hub", lat: 19.2430, lng: 73.1310, radius: 500 },
+      { name: "Khadakpada Circle & Shopping Strip", type: "commercial_hub", lat: 19.2532, lng: 73.1371, radius: 600 },
+      { name: "Metro Junction Mall Zone", type: "commercial_hub", lat: 19.2300, lng: 73.1220, radius: 600 },
+      { name: "Bail Bazaar & Lal Chowki Market", type: "commercial_hub", lat: 19.2490, lng: 73.1280, radius: 500 }
+    ];
+
+    // Neighborhood Demographics & Purchasing Power Profiles
+    const DEMOGRAPHIC_ZONES = [
+      {
+        name: "Khadakpada / Godrej Hill",
+        lat: 19.2532, lng: 73.1371,
+        tier: "High Purchasing Power",
+        desc: "Affluent families & young professionals",
+        boosts: { cafe: 1.15, restaurant: 1.15, salon: 1.12, grocery_or_supermarket: 1.10 }
+      },
+      {
+        name: "Birla College / Syndicate",
+        lat: 19.2479, lng: 73.1471,
+        tier: "Student & Youth Concentrated",
+        desc: "College students & coaching crowd",
+        boosts: { cafe: 1.22, stationery: 1.28, bakery: 1.18, restaurant: 1.10 }
+      },
+      {
+        name: "Station Road / Shivaji Chowk",
+        lat: 19.2403, lng: 73.1305,
+        tier: "Mass Transit & High Retail Volume",
+        desc: "High footfall commuters & daily shoppers",
+        boosts: { clothing_store: 1.20, electronics_store: 1.18, pharmacy: 1.14, cafe: 1.12 }
+      },
+      {
+        name: "Rambaug / Bail Bazaar",
+        lat: 19.2470, lng: 73.1320,
+        tier: "Traditional Commercial & Mixed",
+        desc: "Dense residential with traditional bazaar shoppers",
+        boosts: { grocery_or_supermarket: 1.16, hardware_store: 1.16, pharmacy: 1.12 }
+      },
+      {
+        name: "Adharwadi / Gandhinagar",
+        lat: 19.2610, lng: 73.1350,
+        tier: "Middle-Class Residential",
+        desc: "Family residential neighborhoods",
+        boosts: { grocery_or_supermarket: 1.15, pharmacy: 1.10, salon: 1.08 }
+      },
+      {
+        name: "Tilaknagar / Quiet Pockets",
+        lat: 19.2320, lng: 73.1360,
+        tier: "Quiet Residential Low-Footfall",
+        desc: "Strictly residential, very low commercial foot traffic",
+        boosts: { grocery_or_supermarket: 1.05 }
+      }
+    ];
+
+    function calculateFootfall(lat, lng, totalDensity) {
+      const majorHubs = [
+        { lat: 19.2403, lng: 73.1305, weight: 1.0 },  // Kalyan Station
+        { lat: 19.2430, lng: 73.1310, weight: 0.92 }, // Shivaji Chowk
+        { lat: 19.2532, lng: 73.1371, weight: 0.88 }, // Khadakpada
+        { lat: 19.2479, lng: 73.1471, weight: 0.82 }, // Birla College
+        { lat: 19.2490, lng: 73.1280, weight: 0.78 }, // Bail Bazaar
+        { lat: 19.2300, lng: 73.1220, weight: 0.80 }  // Metro Mall
+      ];
+
+      let bestHubScore = 0;
+      for (const h of majorHubs) {
+        const d = haversineDist(lat, lng, h.lat, h.lng);
+        const hubDistScore = Math.max(0, 100 - (d / 18));
+        const weighted = hubDistScore * h.weight;
+        if (weighted > bestHubScore) bestHubScore = weighted;
+      }
+
+      const densityScore = Math.min(100, (totalDensity / 45.0) * 100);
+      const footfall = Math.round(0.55 * bestHubScore + 0.45 * densityScore);
+      const clamped = Math.max(10, Math.min(98, footfall));
+
+      let label = "Low";
+      if (clamped >= 70) label = "High";
+      else if (clamped >= 40) label = "Moderate";
+
+      return { index: clamped, label: label };
+    }
+
+    function calculateAnchorSynergy(lat, lng, category) {
+      let bestSynergy = 0;
+      let anchorName = "None nearby";
+
+      for (const a of ANCHOR_TENANTS) {
+        const d = haversineDist(lat, lng, a.lat, a.lng);
+        if (d <= a.radius) {
+          const proximityRatio = 1.0 - (d / a.radius);
+          let boost = 0;
+
+          if (a.type === "healthcare") {
+            if (category === "pharmacy") boost = 30 * proximityRatio;
+            else if (category === "grocery_or_supermarket") boost = 8 * proximityRatio;
+          } else if (a.type === "education") {
+            if (category === "stationery") boost = 28 * proximityRatio;
+            else if (category === "cafe") boost = 22 * proximityRatio;
+            else if (category === "bakery") boost = 16 * proximityRatio;
+            else if (category === "restaurant") boost = 12 * proximityRatio;
+          } else if (a.type === "transit_hub" || a.type === "commercial_hub") {
+            if (category === "clothing_store") boost = 18 * proximityRatio;
+            else if (category === "electronics_store") boost = 16 * proximityRatio;
+            else if (category === "cafe" || category === "restaurant") boost = 14 * proximityRatio;
+            else if (category === "salon") boost = 12 * proximityRatio;
+            else boost = 8 * proximityRatio;
+          }
+
+          if (boost > bestSynergy) {
+            bestSynergy = boost;
+            anchorName = `${a.name} (${Math.round(d)}m)`;
+          }
+        }
+      }
+
+      return {
+        boost: Math.round(bestSynergy),
+        anchor: anchorName
+      };
+    }
+
+    function getDemographicZone(lat, lng, category) {
+      let nearestZone = DEMOGRAPHIC_ZONES[0];
+      let minDist = 999999;
+      for (const z of DEMOGRAPHIC_ZONES) {
+        const d = haversineDist(lat, lng, z.lat, z.lng);
+        if (d < minDist) {
+          minDist = d;
+          nearestZone = z;
+        }
+      }
+
+      const mult = (nearestZone.boosts && nearestZone.boosts[category]) ? nearestZone.boosts[category] : 1.0;
+      return {
+        zoneName: nearestZone.name,
+        tier: nearestZone.tier,
+        desc: nearestZone.desc,
+        mult: mult
+      };
+    }
+
     let curLat = 19.2532055;
     let curLng = 73.1370898;
     let map, marker, competitorsLayer;
@@ -607,12 +765,40 @@
         });
       }
 
-      const prob = 1.0 / (1.0 + Math.exp(-logit));
+      const rawProb = 1.0 / (1.0 + Math.exp(-logit));
+      const footfall = calculateFootfall(lat, lng, feats.business_density_1km);
+      const synergy = calculateAnchorSynergy(lat, lng, category);
+      const demo = getDemographicZone(lat, lng, category);
+
+      // Footfall gating: prevents dead-zones (like Tilaknagar with 0 competitors) from inflating to 100%
+      const footfallFactor = 0.38 + 0.62 * (footfall.index / 70.0);
+      let modulated = (rawProb * 100 * footfallFactor) * demo.mult + synergy.boost;
+      const finalScore = Math.max(5, Math.min(98, Math.round(modulated)));
+
+      // Add dynamic Footfall & Synergy to explainable factors
+      const footfallImpact = (footfall.index - 50) / 30.0;
+      impacts.push({
+        name: `Pedestrian Footfall Volume (${footfall.index}/100)`,
+        impact: footfallImpact,
+        absVal: Math.abs(footfallImpact)
+      });
+
+      if (synergy.boost > 0) {
+        impacts.push({
+          name: `Anchor Synergy: ${synergy.anchor.split(' ')[0]}`,
+          impact: synergy.boost / 15.0,
+          absVal: synergy.boost / 15.0
+        });
+      }
+
       impacts.sort((a, b) => b.absVal - a.absVal);
 
       return {
-        probability: prob,
-        score: Math.round(prob * 100),
+        probability: finalScore / 100.0,
+        score: finalScore,
+        footfall: footfall,
+        demographics: demo,
+        synergy: synergy,
         features: feats,
         topFactors: impacts.slice(0, 4)
       };
@@ -712,12 +898,22 @@
         factorBox.appendChild(div);
       }
 
-      // Spatial Stats
+      // Spatial & Context Stats
+      if (document.getElementById('stat-footfall')) {
+        document.getElementById('stat-footfall').innerText = `${res.footfall.index} / 100 (${res.footfall.label})`;
+      }
+      if (document.getElementById('stat-demographics')) {
+        document.getElementById('stat-demographics').innerText = `${res.demographics.zoneName} (${res.demographics.tier})`;
+      }
+      if (document.getElementById('stat-synergy')) {
+        document.getElementById('stat-synergy').innerText = res.synergy.boost > 0
+          ? `${res.synergy.anchor} (+${res.synergy.boost}% synergy)`
+          : 'None detected';
+      }
       document.getElementById('stat-comp-count').innerText  = res.features.competitor_count_500m;
       document.getElementById('stat-nearest-comp').innerText = `${Math.round(res.features.nearest_competitor_dist_m)} m`;
       document.getElementById('stat-density').innerText      = `${res.features.business_density_1km} businesses`;
       document.getElementById('stat-avg-rating').innerText   = `${res.features.avg_rating.toFixed(1)} ★`;
-      document.getElementById('stat-durgadi').innerText      = `${Math.round(res.features.dist_durgadi_fort_m)} m`;
 
       drawCompetitors();
       renderComparisonTable();
