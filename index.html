@@ -369,12 +369,12 @@
 
       <!-- Analysis Results Card -->
       <div class="card">
-        <h2>Viability Assessment</h2>
+        <h2>Location Score</h2>
 
         <div class="score-banner">
           <div>
             <div class="score-val" id="score-display">71%</div>
-            <div class="score-meta">Estimated Viability Score for <strong id="cat-label" style="color:#ffffff;">Cafe</strong></div>
+            <div class="score-meta">Estimated viability score for <strong id="cat-label" style="color:#ffffff;">Cafe</strong></div>
           </div>
           <div id="badge-pill" class="pill pill-good">GOOD LOCATION</div>
         </div>
@@ -385,23 +385,23 @@
 
         <!-- Explainable ML Factor Breakdown -->
         <h3 style="font-size: 0.88rem; font-weight: 600; margin-bottom: 8px; color: #ffffff;">
-          What Influenced This Score
+          Why This Score?
         </h3>
         <div class="factors-box" id="factors-container"></div>
 
         <!-- Spatial Stats -->
         <h3 style="font-size: 0.88rem; font-weight: 600; margin-bottom: 8px; color: #ffffff;">
-          Spatial & Competitive Context
+          Area Overview
         </h3>
         <table class="stats-table">
           <tbody>
-            <tr><td>Pedestrian Footfall:</td><td id="stat-footfall">--</td></tr>
-            <tr><td>Demographic Profile:</td><td id="stat-demographics">--</td></tr>
-            <tr><td>Anchor Tenant Synergy:</td><td id="stat-synergy">--</td></tr>
-            <tr><td>Direct competitors within 500m:</td><td id="stat-comp-count">3</td></tr>
-            <tr><td>Distance to nearest competitor:</td><td id="stat-nearest-comp">180 m</td></tr>
-            <tr><td>Total commercial density (1km radius):</td><td id="stat-density">48 businesses</td></tr>
-            <tr><td>Avg. rating of nearby businesses:</td><td id="stat-avg-rating">4.2 ★</td></tr>
+            <tr><td>Walking Crowd:</td><td id="stat-footfall">--</td></tr>
+            <tr><td>Neighborhood Type:</td><td id="stat-demographics">--</td></tr>
+            <tr><td>Helpful Landmark Nearby:</td><td id="stat-synergy">--</td></tr>
+            <tr><td>Competing shops within 500m:</td><td id="stat-comp-count">3</td></tr>
+            <tr><td>Distance to closest rival:</td><td id="stat-nearest-comp">180 m</td></tr>
+            <tr><td>Total shops nearby (1km):</td><td id="stat-density">48 businesses</td></tr>
+            <tr><td>Average rating of nearby shops:</td><td id="stat-avg-rating">4.2 ★</td></tr>
           </tbody>
         </table>
 
@@ -491,22 +491,22 @@
         review_count:               -0.009945
       },
       descriptions: {
-        competitor_count_500m:       "Direct competitors within 500m",
-        business_density_1km:        "Commercial activity in 1km area",
-        nearest_competitor_dist_m:   "Spacing from nearest competitor",
-        dist_durgadi_fort_m:         "Distance from Durgadi Fort area",
-        avg_rating:                  "Average customer rating",
-        review_count:                "Customer review volume",
-        cat_cafe:                    "Cafe category fit",
-        cat_restaurant:              "Restaurant category fit",
-        cat_pharmacy:                "Pharmacy category fit",
-        cat_bakery:                  "Bakery category fit",
-        cat_grocery_or_supermarket:  "Grocery category fit",
-        cat_clothing_store:          "Clothing store category fit",
-        cat_electronics_store:       "Electronics store category fit",
-        cat_hardware_store:          "Hardware store category fit",
-        cat_salon:                   "Salon category fit",
-        cat_stationery:              "Stationery store category fit"
+        competitor_count_500m:       "Competing shops within 500m",
+        business_density_1km:        "Total shops nearby (1km)",
+        nearest_competitor_dist_m:   "Distance to closest rival",
+        dist_durgadi_fort_m:         "Distance to Durgadi Fort area",
+        avg_rating:                  "Average rating of nearby shops",
+        review_count:                "Number of customer reviews",
+        cat_cafe:                    "Customer demand for cafes",
+        cat_restaurant:              "Customer demand for restaurants",
+        cat_pharmacy:                "Customer demand for medical stores",
+        cat_bakery:                  "Customer demand for bakeries",
+        cat_grocery_or_supermarket:  "Customer demand for grocery stores",
+        cat_clothing_store:          "Customer demand for clothing stores",
+        cat_electronics_store:       "Customer demand for electronics shops",
+        cat_hardware_store:          "Customer demand for hardware shops",
+        cat_salon:                   "Customer demand for salons",
+        cat_stationery:              "Customer demand for stationery shops"
       }
     };
 
@@ -563,48 +563,48 @@
       { name: "Bail Bazaar & Lal Chowki Market", type: "commercial_hub", lat: 19.2490, lng: 73.1280, radius: 500 }
     ];
 
-    // Neighborhood Demographics & Purchasing Power Profiles
+    // Neighborhood Profiles
     const DEMOGRAPHIC_ZONES = [
       {
         name: "Khadakpada / Godrej Hill",
         lat: 19.2532, lng: 73.1371,
-        tier: "High Purchasing Power",
-        desc: "Affluent families & young professionals",
+        tier: "Wealthy Families",
+        desc: "Well-off families and working professionals",
         boosts: { cafe: 1.15, restaurant: 1.15, salon: 1.12, grocery_or_supermarket: 1.10 }
       },
       {
         name: "Birla College / Syndicate",
         lat: 19.2479, lng: 73.1471,
-        tier: "Student & Youth Concentrated",
-        desc: "College students & coaching crowd",
+        tier: "College Students & Youth",
+        desc: "Students and young crowd",
         boosts: { cafe: 1.22, stationery: 1.28, bakery: 1.18, restaurant: 1.10 }
       },
       {
         name: "Station Road / Shivaji Chowk",
         lat: 19.2403, lng: 73.1305,
-        tier: "Mass Transit & High Retail Volume",
-        desc: "High footfall commuters & daily shoppers",
+        tier: "Very Busy Market & Station Area",
+        desc: "High daily walking crowd and shoppers",
         boosts: { clothing_store: 1.20, electronics_store: 1.18, pharmacy: 1.14, cafe: 1.12 }
       },
       {
         name: "Rambaug / Bail Bazaar",
         lat: 19.2470, lng: 73.1320,
-        tier: "Traditional Commercial & Mixed",
-        desc: "Dense residential with traditional bazaar shoppers",
+        tier: "Traditional Local Market",
+        desc: "Busy neighborhood with daily market shoppers",
         boosts: { grocery_or_supermarket: 1.16, hardware_store: 1.16, pharmacy: 1.12 }
       },
       {
         name: "Adharwadi / Gandhinagar",
         lat: 19.2610, lng: 73.1350,
-        tier: "Middle-Class Residential",
-        desc: "Family residential neighborhoods",
+        tier: "Family Neighborhood",
+        desc: "Residential family area",
         boosts: { grocery_or_supermarket: 1.15, pharmacy: 1.10, salon: 1.08 }
       },
       {
         name: "Tilaknagar / Quiet Pockets",
         lat: 19.2320, lng: 73.1360,
-        tier: "Quiet Residential Low-Footfall",
-        desc: "Strictly residential, very low commercial foot traffic",
+        tier: "Quiet Residential Area",
+        desc: "Quiet residential streets with very few walkers",
         boosts: { grocery_or_supermarket: 1.05 }
       }
     ];
@@ -688,12 +688,12 @@
         }
       }
 
-      // If location is outside central Kalyan commercial core (>2200m away, e.g. Dombivli border or rural outskirts):
+      // If location is outside central Kalyan commercial core (>2200m away, e.g. Dombivli border or outer edges):
       if (minDist > 2200) {
         return {
-          zoneName: "Kalyan Outskirts / Sub-Urban",
-          tier: "Low Commercial Density Zone",
-          desc: "Peripheral residential pocket with sparse commercial foot traffic",
+          zoneName: "Kalyan Outskirts",
+          tier: "Quiet Outer Area",
+          desc: "Outer area with very few shops and walkers",
           mult: 0.85
         };
       }
@@ -776,19 +776,19 @@
         let featDisplayName = MODEL.descriptions[featName] || featName;
         if (featName === 'competitor_count_500m') {
           if (feats.competitor_count_500m === 0) {
-            featDisplayName = "Zero direct competitors within 500m";
+            featDisplayName = "No competing shops within 500m";
           } else {
-            featDisplayName = `Competitor cluster (${feats.competitor_count_500m} rivals in 500m)`;
+            featDisplayName = `${feats.competitor_count_500m} competing shops within 500m`;
           }
         }
         if (featName === 'nearest_competitor_dist_m') {
-          featDisplayName = `Proximity to nearest rival (${Math.round(feats.nearest_competitor_dist_m)}m)`;
+          featDisplayName = `Closest rival is ${Math.round(feats.nearest_competitor_dist_m)}m away`;
         }
         if (featName === 'business_density_1km') {
           if (feats.business_density_1km === 0) {
-            featDisplayName = "Zero commercial market (0 shops in 1km)";
+            featDisplayName = "No shops at all nearby (1km)";
           } else {
-            featDisplayName = `Commercial density (${feats.business_density_1km} shops in 1km)`;
+            featDisplayName = `${feats.business_density_1km} total shops nearby (1km)`;
           }
         }
 
@@ -812,14 +812,14 @@
       // Add dynamic Footfall & Synergy to explainable factors
       const footfallImpact = (footfall.index - 50) / 18.0;
       impacts.push({
-        name: `Pedestrian Footfall Volume (${footfall.index}/100)`,
+        name: `Walking crowd level (${footfall.index}/100)`,
         impact: footfallImpact,
         absVal: Math.abs(footfallImpact) * 1.5
       });
 
       if (synergy.boost > 0) {
         impacts.push({
-          name: `Anchor Synergy: ${synergy.anchor.split(' ')[0]}`,
+          name: `Near ${synergy.anchor.split(' ')[0]} (helpful neighbor)`,
           impact: synergy.boost / 15.0,
           absVal: synergy.boost / 15.0
         });
@@ -946,8 +946,12 @@
       for (const item of res.topFactors) {
         const isPos = item.impact >= 0;
         const abs = item.absVal;
-        const strength = abs >= 0.4 ? "Strong" : abs >= 0.15 ? "Moderate" : "Slight";
-        const label = isPos ? `${strength} positive effect` : `${strength} negative effect`;
+        let label = "";
+        if (isPos) {
+          label = abs >= 0.4 ? "Big help (+)" : abs >= 0.15 ? "Helps (+)" : "Small help (+)";
+        } else {
+          label = abs >= 0.4 ? "Big problem (-)" : abs >= 0.15 ? "Hurts (-)" : "Small problem (-)";
+        }
         const div = document.createElement('div');
         div.className = "factor-row";
         div.innerHTML = `
@@ -959,19 +963,20 @@
 
       // Spatial & Context Stats
       if (document.getElementById('stat-footfall')) {
-        document.getElementById('stat-footfall').innerText = `${res.footfall.index} / 100 (${res.footfall.label})`;
+        let crowdLevel = res.footfall.index >= 70 ? "Busy" : res.footfall.index >= 40 ? "Medium" : "Quiet";
+        document.getElementById('stat-footfall').innerText = `${res.footfall.index} / 100 (${crowdLevel})`;
       }
       if (document.getElementById('stat-demographics')) {
         document.getElementById('stat-demographics').innerText = `${res.demographics.zoneName} (${res.demographics.tier})`;
       }
       if (document.getElementById('stat-synergy')) {
         document.getElementById('stat-synergy').innerText = res.synergy.boost > 0
-          ? `${res.synergy.anchor} (+${res.synergy.boost}% synergy)`
-          : 'None detected';
+          ? `${res.synergy.anchor} (+${res.synergy.boost}% boost)`
+          : 'None nearby';
       }
       document.getElementById('stat-comp-count').innerText  = res.features.competitor_count_500m;
       document.getElementById('stat-nearest-comp').innerText = `${Math.round(res.features.nearest_competitor_dist_m)} m`;
-      document.getElementById('stat-density').innerText      = `${res.features.business_density_1km} businesses`;
+      document.getElementById('stat-density').innerText      = `${res.features.business_density_1km} shops`;
       document.getElementById('stat-avg-rating').innerText   = `${res.features.avg_rating.toFixed(1)} ★`;
 
       drawCompetitors();
