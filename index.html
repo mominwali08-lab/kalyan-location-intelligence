@@ -774,11 +774,22 @@
         logit += impact;
 
         let featDisplayName = MODEL.descriptions[featName] || featName;
-        if (featName === 'competitor_count_500m' && feats.competitor_count_500m === 0) {
-          featDisplayName = "Zero direct competitors within 500m";
+        if (featName === 'competitor_count_500m') {
+          if (feats.competitor_count_500m === 0) {
+            featDisplayName = "Zero direct competitors within 500m";
+          } else {
+            featDisplayName = `Competitor cluster (${feats.competitor_count_500m} rivals in 500m)`;
+          }
         }
-        if (featName === 'business_density_1km' && feats.business_density_1km === 0) {
-          featDisplayName = "Zero commercial market (0 shops in 1km)";
+        if (featName === 'nearest_competitor_dist_m') {
+          featDisplayName = `Proximity to nearest rival (${Math.round(feats.nearest_competitor_dist_m)}m)`;
+        }
+        if (featName === 'business_density_1km') {
+          if (feats.business_density_1km === 0) {
+            featDisplayName = "Zero commercial market (0 shops in 1km)";
+          } else {
+            featDisplayName = `Commercial density (${feats.business_density_1km} shops in 1km)`;
+          }
         }
 
         impacts.push({
@@ -814,7 +825,29 @@
         });
       }
 
-      impacts.sort((a, b) => b.absVal - a.absVal);
+      // Balanced factor display: show both the main negative and positive drivers
+      const posFactors = impacts.filter(i => i.impact > 0).sort((a, b) => b.impact - a.impact);
+      const negFactors = impacts.filter(i => i.impact < 0).sort((a, b) => a.impact - b.impact);
+
+      let chosenFactors = [];
+      if (finalScore < 50) {
+        // If risky, prioritize showing the key negative reasons why it is risky:
+        chosenFactors = [...negFactors.slice(0, 2), ...posFactors.slice(0, 2)];
+        if (chosenFactors.length < 4) {
+          chosenFactors = [...negFactors.slice(0, 3), ...posFactors.slice(0, 1)];
+        }
+      } else {
+        // If good, prioritize showing what helped it succeed:
+        chosenFactors = [...posFactors.slice(0, 2), ...negFactors.slice(0, 2)];
+        if (chosenFactors.length < 4) {
+          chosenFactors = [...posFactors.slice(0, 3), ...negFactors.slice(0, 1)];
+        }
+      }
+
+      if (chosenFactors.length < 4) {
+        impacts.sort((a, b) => b.absVal - a.absVal);
+        chosenFactors = impacts.slice(0, 4);
+      }
 
       return {
         probability: finalScore / 100.0,
@@ -823,7 +856,7 @@
         demographics: demo,
         synergy: synergy,
         features: feats,
-        topFactors: impacts.slice(0, 4)
+        topFactors: chosenFactors
       };
     }
 
