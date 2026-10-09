@@ -577,7 +577,7 @@
         lat: 19.2479, lng: 73.1471,
         tier: "College Students & Youth",
         desc: "Students and young crowd",
-        boosts: { cafe: 1.22, stationery: 1.28, bakery: 1.18, restaurant: 1.10 }
+        boosts: { cafe: 1.28, stationery: 1.28, bakery: 1.20, restaurant: 1.12 }
       },
       {
         name: "Station Road / Shivaji Chowk",
@@ -614,7 +614,7 @@
         { lat: 19.2403, lng: 73.1305, weight: 1.0 },  // Kalyan Station
         { lat: 19.2430, lng: 73.1310, weight: 0.92 }, // Shivaji Chowk
         { lat: 19.2532, lng: 73.1371, weight: 0.88 }, // Khadakpada
-        { lat: 19.2479, lng: 73.1471, weight: 0.82 }, // Birla College
+        { lat: 19.2479, lng: 73.1471, weight: 0.88 }, // Birla College
         { lat: 19.2490, lng: 73.1280, weight: 0.78 }, // Bail Bazaar
         { lat: 19.2300, lng: 73.1220, weight: 0.80 }  // Metro Mall
       ];
@@ -653,9 +653,9 @@
             else if (category === "grocery_or_supermarket") boost = 8 * proximityRatio;
           } else if (a.type === "education") {
             if (category === "stationery") boost = 28 * proximityRatio;
-            else if (category === "cafe") boost = 22 * proximityRatio;
-            else if (category === "bakery") boost = 16 * proximityRatio;
-            else if (category === "restaurant") boost = 12 * proximityRatio;
+            else if (category === "cafe") boost = 30 * proximityRatio;
+            else if (category === "bakery") boost = 20 * proximityRatio;
+            else if (category === "restaurant") boost = 14 * proximityRatio;
           } else if (a.type === "transit_hub" || a.type === "commercial_hub") {
             if (category === "clothing_store") boost = 18 * proximityRatio;
             else if (category === "electronics_store") boost = 16 * proximityRatio;
