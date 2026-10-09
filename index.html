@@ -584,7 +584,7 @@
         lat: 19.2403, lng: 73.1305,
         tier: "Very Busy Market & Station Area",
         desc: "High daily walking crowd and shoppers",
-        boosts: { clothing_store: 1.20, electronics_store: 1.18, pharmacy: 1.14, cafe: 1.12 }
+        boosts: { clothing_store: 1.20, electronics_store: 1.18, grocery_or_supermarket: 1.18, pharmacy: 1.14, cafe: 1.12, restaurant: 1.10 }
       },
       {
         name: "Rambaug / Bail Bazaar",
@@ -659,6 +659,8 @@
           } else if (a.type === "transit_hub" || a.type === "commercial_hub") {
             if (category === "clothing_store") boost = 18 * proximityRatio;
             else if (category === "electronics_store") boost = 16 * proximityRatio;
+            else if (category === "grocery_or_supermarket") boost = 16 * proximityRatio;
+            else if (category === "pharmacy") boost = 14 * proximityRatio;
             else if (category === "cafe" || category === "restaurant") boost = 14 * proximityRatio;
             else if (category === "salon") boost = 12 * proximityRatio;
             else boost = 8 * proximityRatio;
