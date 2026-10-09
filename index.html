@@ -773,6 +773,10 @@
         const impact = coef * z;
         logit += impact;
 
+        // Skip category columns that are NOT the selected category — they are always 0
+        // and showing them (e.g. "Customer demand for stationery") would confuse the user
+        if (featName.startsWith('cat_') && featName !== `cat_${category}`) continue;
+
         let featDisplayName = MODEL.descriptions[featName] || featName;
         if (featName === 'competitor_count_500m') {
           if (feats.competitor_count_500m === 0) {
