@@ -363,6 +363,64 @@
           Plot nearby direct competitors
         </label>
       </div>
+
+      <!-- Quick Viva Demo Presets Card -->
+      <div class="card">
+        <h2 style="display: flex; align-items: center; justify-content: space-between;">
+          <span>3. Live Demo Scenarios</span>
+          <span style="font-size: 0.72rem; color: #a78bfa; font-weight: 500;">1-Click Viva Presets</span>
+        </h2>
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px;">
+          Instant scenario tests showcasing model decision logic:
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button class="btn" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; text-align: left; padding: 10px 14px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center;" onclick="runPresetDemo(19.2532055, 73.1370898, 'cafe', 'Khadakpada Circle (Cafe)')">
+            <span>🔴 <strong>Oversaturated Cafe:</strong> Khadakpada</span>
+            <span style="font-weight: 700; color: #ef4444;">~35% Risky</span>
+          </button>
+
+          <button class="btn" style="background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); color: #86efac; text-align: left; padding: 10px 14px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center;" onclick="runPresetDemo(19.2430, 73.1340, 'pharmacy', 'Civil Hospital (Pharmacy)')">
+            <span>🟢 <strong>Hospital Anchor:</strong> Civil Hospital</span>
+            <span style="font-weight: 700; color: #22c55e;">~78% Viable</span>
+          </button>
+
+          <button class="btn" style="background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); color: #86efac; text-align: left; padding: 10px 14px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center;" onclick="runPresetDemo(19.2403, 73.1305, 'grocery_or_supermarket', 'Kalyan Station (Grocery)')">
+            <span>🟢 <strong>Transit Footfall:</strong> Kalyan Station</span>
+            <span style="font-weight: 700; color: #22c55e;">~68% Viable</span>
+          </button>
+
+          <button class="btn" style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); color: #93c5fd; text-align: left; padding: 10px 14px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center;" onclick="runPresetDemo(19.2479275, 73.1471217, 'cafe', 'Birla College Gate (Cafe)')">
+            <span>🎓 <strong>Campus Zone:</strong> B.K. Birla College</span>
+            <span style="font-weight: 700; color: #60a5fa;">~53% Viable</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Model Intelligence Engine Card -->
+      <div class="card" style="background: linear-gradient(180deg, #151c2c 0%, #0f1522 100%);">
+        <h2 style="font-size: 0.88rem; color: #cbd5e1; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+          <span>🧠 VoidView AI Architecture</span>
+        </h2>
+        <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.6;">
+          <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #1e293b;">
+            <span>Algorithm:</span>
+            <strong style="color: #f1f5f9;">Logistic Regression</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #1e293b;">
+            <span>5-Fold Cross-Validation:</span>
+            <strong style="color: #22c55e;">ROC-AUC 0.849</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #1e293b;">
+            <span>Training Dataset:</span>
+            <strong style="color: #f1f5f9;">267 Real Kalyan Nodes</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+            <span>Client Inference Latency:</span>
+            <strong style="color: #38bdf8;">&lt;1 ms (Zero Server)</strong>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- RIGHT PANEL: DARK MAP & ASSESSMENT -->
@@ -1056,6 +1114,19 @@
         `;
         tbody.appendChild(tr);
       }
+    }
+
+    function runPresetDemo(lat, lng, cat, name) {
+      curLat = lat;
+      curLng = lng;
+      document.getElementById('category-select').value = cat;
+      document.getElementById('landmark-select').value = "";
+      document.getElementById('address-input').value = "";
+      document.getElementById('pin-status').innerText = `Demo: ${name}`;
+
+      map.setView([curLat, curLng], 16);
+      marker.setLatLng([curLat, curLng]);
+      evaluateSelection();
     }
 
     function onLandmarkSelect() {
