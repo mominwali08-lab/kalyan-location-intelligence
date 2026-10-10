@@ -326,6 +326,7 @@
           <option value="19.2532055,73.1370898">Khadakpada Circle (West)</option>
           <option value="19.2403,73.1305">Kalyan Railway Station (West Entry)</option>
           <option value="19.2479275,73.1471217">B.K. Birla College Gate</option>
+          <option value="19.2550,73.1500">K.M. Agrawal College & Model College</option>
           <option value="19.2430,73.1340">Apex & Kalyan Civil Hospital</option>
           <option value="19.2425,73.1290">Shivaji Chowk Bazaar</option>
           <option value="19.2453717,73.1186096">Durgadi Fort Chowk</option>
@@ -337,9 +338,9 @@
           <option value="19.2650,73.1550">Peripheral Outskirts (Shahad Road)</option>
         </select>
 
-        <label for="address-input">Or Search Landmark Name:</label>
+        <label for="address-input">Or Search Landmark Name / Coordinates:</label>
         <div style="display: flex; gap: 8px; margin-bottom: 18px;">
-          <input type="text" id="address-input" placeholder="e.g. Civil Hospital, Birla College, Station" onkeydown="if(event.key==='Enter') geocodeSearch();" style="margin-bottom:0;" />
+          <input type="text" id="address-input" placeholder="e.g. Civil Hospital, Agrawal College, or 19.2479, 73.1471" onkeydown="if(event.key==='Enter') geocodeSearch();" style="margin-bottom:0;" />
           <button class="btn" style="width: auto; padding: 0 16px;" onclick="geocodeSearch()">Search</button>
         </div>
 
@@ -1149,8 +1150,24 @@
       const q = document.getElementById('address-input').value.trim();
       if (!q) return;
 
-      // Reset the landmark dropdown when searching an address:
+      // Reset the landmark dropdown when searching an address or coordinate:
       document.getElementById('landmark-select').value = "";
+
+      // 1. Direct GPS Coordinates Support (e.g. "19.2550, 73.1500" or "19.2550 73.1500" or "[19.2550, 73.1500]"):
+      const coordMatch = q.match(/^\[?\s*([0-9]{1,2}(?:\.[0-9]+)?)\s*[, ]\s*([0-9]{1,3}(?:\.[0-9]+)?)\s*\]?$/);
+      if (coordMatch) {
+        const parsedLat = parseFloat(coordMatch[1]);
+        const parsedLng = parseFloat(coordMatch[2]);
+        if (!isNaN(parsedLat) && !isNaN(parsedLng) && parsedLat >= -90 && parsedLat <= 90 && parsedLng >= -180 && parsedLng <= 180) {
+          curLat = parsedLat;
+          curLng = parsedLng;
+          document.getElementById('pin-status').innerText = `Coordinates: ${parsedLat.toFixed(4)}, ${parsedLng.toFixed(4)}`;
+          map.setView([curLat, curLng], 16);
+          marker.setLatLng([curLat, curLng]);
+          evaluateSelection();
+          return;
+        }
+      }
 
       const s = q.toLowerCase();
       let match = null;
@@ -1158,6 +1175,8 @@
         match = [19.2430, 73.1340, "Apex & Kalyan Civil Hospital"];
       } else if (s.includes('birla')) {
         match = [19.2479, 73.1471, "B.K. Birla College Gate"];
+      } else if (s.includes('agrawal') || s.includes('agarwal') || s.includes('km') || s.includes('model college')) {
+        match = [19.2550, 73.1500, "K.M. Agrawal College / Model College"];
       } else if (s.includes('station') || s.includes('railway')) {
         match = [19.2403, 73.1305, "Kalyan Railway Station"];
       } else if (s.includes('khadakpada')) {
@@ -1166,6 +1185,10 @@
         match = [19.2136, 73.0927, "Tilaknagar (Outskirts)"];
       } else if (s.includes('fortis')) {
         match = [19.2630, 73.1410, "Fortis Hospital Kalyan"];
+      } else if (s.includes('holy cross')) {
+        match = [19.2460, 73.1250, "Holy Cross Hospital"];
+      } else if (s.includes('meera') || s.includes('bail bazaar') || s.includes('bailbazaar')) {
+        match = [19.2485, 73.1315, "Meera Hospital & Bail Bazaar"];
       } else if (s.includes('durgadi')) {
         match = [19.2453, 73.1186, "Durgadi Fort Chowk"];
       } else if (s.includes('rambaug')) {
