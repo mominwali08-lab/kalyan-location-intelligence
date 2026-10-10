@@ -1,58 +1,74 @@
-# Location Intelligence System for Kalyan (Maharashtra, India)
+# 🌌 VoidView: AI-Powered Retail Location Intelligence System
+> *"From void to viability."*
 
-A machine learning decision-support system for commercial site selection in Kalyan. Designed as an honest, defendable final-year capstone project built with free, open tools and real Google Places data.
+An AI-driven geospatial decision-support system designed to evaluate and predict retail site viability across Kalyan City (Maharashtra, India).
+
+🌐 **Live Web Application:** [https://mominwali08-lab.github.io/VoidView/](https://mominwali08-lab.github.io/VoidView/)
 
 ---
 
 ## 📌 Project Overview
-When opening a new business in Kalyan, picking the right spot is critical. A user selects a geographic spot (via address search or clicking on the map) and chooses a business type. The application returns:
-- A location viability percentage score.
-- Plain-English breakdown of the top factors influencing that score (based on linear model coefficients).
-- Nearby direct competitors overlaid on a dark Leaflet map.
-- If the spot is **Risky (<50%)**: suggests nearby compass directions (at 200m and 400m) with higher viability, and identifies business categories that would thrive at the chosen spot.
-- Complete ranked viability comparison across all 10 business types.
+When opening a new brick-and-mortar retail business in Kalyan, choosing the right location is the single most critical factor for survival. **VoidView** eliminates the guesswork by combining machine learning with geospatial analytics:
+
+- **Instant Viability Score (0–100%):** Evaluates any point clicked on the interactive map or searched by landmark.
+- **Factor-by-Factor Explainability:** Transparent breakdown of positive drivers and risk factors (e.g. competitor counts, distance to closest rival, commercial density, walking footfall).
+- **Spatial Intelligence Layer:**
+  - **Pedestrian Footfall Index (0–100):** Weighted proximity to Kalyan's 6 primary transit and commercial nodes.
+  - **Anchor Tenant Synergy Engine:** Proximity boosts (+8% to +30%) from 13 critical anchors (hospitals, colleges, transit hubs).
+  - **Demographic Zone Multipliers:** Purchasing power and audience targeting across 6 distinct Kalyan neighborhoods.
+- **Comparative Category Analysis:** Ranks all 10 retail categories for any chosen spot.
+- **Smart Location Advice:** Strategic guidance for risky locations (suggesting nearby directions or optimal business types).
 
 ---
 
-## 🛠️ Project Structure
+## 🛠️ Project Repository Structure
+
 ```text
-kalyan-location-intelligence/
+VoidView/
+├── index.html                           # Live Web Application (Leaflet.js + Vanilla JS)
+├── VoidView_Data_Science_Benchmark.ipynb # Complete Jupyter Notebook with pre-rendered plots & metrics
+├── benchmark_and_evaluation.py          # Python benchmark pipeline (5-fold CV, K-Means, ROC plots)
+├── requirements.txt                     # Python dependencies
 ├── data/
-│   └── kalyan_businesses.csv       # Original dataset (267 real Google Places businesses)
-├── index.html                      # Offline Dark-Theme Web Application (Runs in any browser)
-├── app.py                          # All-in-one Streamlit Python Web Application
-├── requirements.txt                # Python package dependencies
-├── REPORT_NOTES.md                 # Full project report, methodology, and 10 viva answers
-└── README.md                       # Project documentation & run guide
+│   ├── kalyan_businesses.csv            # Dataset of 267 verified businesses from Google Places API
+│   └── new_model_weights.json           # Exported Logistic Regression weights & feature scalers
+├── reports/
+│   ├── roc_curves.png                   # ROC curve comparison across 3 ML models
+│   ├── confusion_matrices.png           # Confusion matrices for all models
+│   ├── feature_importance.png           # Feature attribution (Beta weights vs Gini importance)
+│   ├── spatial_clusters.png             # K-Means spatial cluster map (K=5)
+│   └── model_comparison_report.md       # Full benchmark performance table & analysis
+├── REPORT_NOTES.md                      # Comprehensive methodology notes & viva preparation guide
+└── README.md                            # Project documentation
 ```
 
 ---
 
-## 💻 How to Run the Project
+## 🚀 How to Run the Project
 
-### Method 1: The Offline Web Application (Recommended)
-No terminal or Python installation is required.
+### 1. Web Application (No Setup Needed)
+- Open the live deployment: **[https://mominwali08-lab.github.io/VoidView/](https://mominwali08-lab.github.io/VoidView/)**
+- Or locally: double-click `index.html` to run in any browser.
 
-1. Open your File Explorer to this folder.
-2. **Double-click `index.html`**.
-3. It opens directly in **Google Chrome**, **Microsoft Edge**, or your default web browser.
+### 2. Data Science Benchmark & Notebook
+To view or re-run the machine learning models and visualizations:
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
 
----
+# 2. Run the benchmarking pipeline
+python benchmark_and_evaluation.py
 
-### Method 2: The Python / Streamlit Version
-If your professor or examiner asks to see the Python code running in a terminal:
-
-1. Install dependencies:
-   ```powershell
-   pip install -r requirements.txt
-   ```
-2. Run the application:
-   ```powershell
-   python -m streamlit run app.py
-   ```
-3. Open your browser at `http://localhost:8501`.
+# 3. Open the Jupyter Notebook
+jupyter notebook VoidView_Data_Science_Benchmark.ipynb
+```
 
 ---
 
-## 📚 Viva Defense & Documentation
-- For detailed methodology, cross-validation metrics, feature ablation tables, and **10 prepared viva questions and answers**, see **[`REPORT_NOTES.md`](REPORT_NOTES.md)**.
+## 📊 Model Performance Summary (5-Fold Stratified CV)
+
+| Machine Learning Model | 5-Fold ROC-AUC | Accuracy | F1-Score | Role in Architecture |
+| :--- | :---: | :---: | :---: | :--- |
+| **Logistic Regression (Standardized)** | **0.8489 ± 0.031** | **75.29%** | **0.7561** | **Deployed Production Engine** (Zero latency, full factor-level explainability) |
+| **Random Forest Classifier** | 0.8701 ± 0.025 | 77.16% | 0.7704 | Comparative Baseline |
+| **Gradient Boosting Classifier** | 0.8489 ± 0.033 | 78.29% | 0.7864 | Comparative Baseline |
