@@ -26,8 +26,7 @@ When opening a new brick-and-mortar retail business in Kalyan, choosing the righ
 ```text
 VoidView/
 ├── index.html                           # Live Web Application (Leaflet.js + Vanilla JS)
-├── VoidView_Data_Science_Benchmark.ipynb # Complete Jupyter Notebook with pre-rendered plots & metrics
-├── benchmark_and_evaluation.py          # Python benchmark pipeline (5-fold CV, K-Means, ROC plots)
+├── VoidView_Data_Science_Benchmark.ipynb # Complete Data Science Notebook (Models, 5-Fold CV, Plots)
 ├── requirements.txt                     # Python dependencies
 ├── data/
 │   ├── kalyan_businesses.csv            # Dataset of 267 verified businesses from Google Places API
@@ -50,16 +49,13 @@ VoidView/
 - Open the live deployment: **[https://mominwali08-lab.github.io/VoidView/](https://mominwali08-lab.github.io/VoidView/)**
 - Or locally: double-click `index.html` to run in any browser.
 
-### 2. Data Science Benchmark & Notebook
+### 2. Data Science Notebook & Benchmarks
 To view or re-run the machine learning models and visualizations:
 ```bash
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Run the benchmarking pipeline
-python benchmark_and_evaluation.py
-
-# 3. Open the Jupyter Notebook
+# 2. Open the Jupyter Notebook
 jupyter notebook VoidView_Data_Science_Benchmark.ipynb
 ```
 
